@@ -48,11 +48,15 @@ class _GpioParser(argparse.Action):
 class VidLooper(object):
     _GPIO_BOUNCE_TIME = 200
     _VIDEO_EXTS = ('.mp4', '.m4v', '.mov', '.avi', '.mkv')
-    _GPIO_PIN_DEFAULT = {
+    _GPIO_PIN_DEFAULT = {`
         26: 21,
         19: 20,
         13: 16,
-        6: 12
+        6: 12,
+        5: 25,
+        22: 24,
+        27: 23,
+        17: 18,
     }
 
     # Use this lock to avoid multiple button presses updating the player
@@ -67,7 +71,7 @@ class VidLooper(object):
 
     def __init__(self, audio='hdmi', autostart=True, restart_on_press=False,
                  video_dir=os.getcwd(), videos=None, gpio_pins=None, loop=True,
-                 no_osd=False, shutdown_pin=None, splash=None, debug=False):
+                 no_osd=False, shutdown_pin=None, splash=None, debug=False, subtitle_pin=None, loop_pins=None):
         # Use default GPIO pins, if needed
         if gpio_pins is None:
             gpio_pins = self._GPIO_PIN_DEFAULT.copy()
@@ -75,7 +79,8 @@ class VidLooper(object):
 
         # Add shutdown pin
         self.shutdown_pin = shutdown_pin
-
+        # Add substitle pin
+        self.subtitle_pin = subtitle_pin
         # Assemble the list of videos to play, if needed
         if videos:
             self.videos = videos
@@ -146,6 +151,9 @@ class VidLooper(object):
         """ Create a tuple of input pins, for easy access """
         return tuple(self.gpio_pins.keys())
 
+    def subtitles():
+  
+
     def start(self):
         if not self.debug:
             # Clear the screen
@@ -176,6 +184,13 @@ class VidLooper(object):
             else:
                 # Start playing first video
                 self.switch_vid(self.in_pins[0])
+          # WIP pin to toggle subtitles
+        if self.subtitle_pin:
+            GPIO.setup(self.subtitle_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(self.subtitle_pin,
+                                  GPIO.FALLING,
+                                  callback=lambda _: call(['shutdown', '-h', 'now'], shell=False),
+                                  bouncetime=self._GPIO_BOUNCE_TIME)
 
         # Enable event detection on each input pin
         for pin in self.in_pins:
@@ -265,7 +280,7 @@ Raspberry Pi, which must be installed separately.
                              'terminal output)')
     parser.add_argument('--countdown', type=int, default=0,
                         help='Add a countdown before start (time in seconds)')
-    parser.add_argument('--splash', type=str, default=None,
+    parser.add_argument('--splash', type=str, default=/home/pi/jabcecc.png,
                         help='Splash screen image to show when no video is '
                              'playing')
     parser.add_argument('--no-osd', action='store_true', default=False,
