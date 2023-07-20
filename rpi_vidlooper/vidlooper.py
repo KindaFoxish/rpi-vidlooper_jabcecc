@@ -12,6 +12,7 @@ import time
 from threading import Lock
 import signal
 import argparse
+import 
 
 
 class _GpioParser(argparse.Action):
@@ -96,7 +97,7 @@ class VidLooper(object):
                                 'directory or filename(s).'.format(video_dir))
 
         # Check that we have enough GPIO input pins for every video
-        assert len(videos) <= len(self.gpio_pins), \
+        assert len(videos) <= 12 - len(self.gpio_pins), \ # Possibly need to create new class for additional pins
             "Not enough GPIO pins configured for number of videos"
 
         self.debug = debug
@@ -145,6 +146,7 @@ class VidLooper(object):
                                 stdout=None if self.debug else PIPE,
                                 preexec_fn=os.setsid)
                 self._active_vid = filename
+                
 
     @property
     def in_pins(self):
@@ -288,6 +290,8 @@ Raspberry Pi, which must be installed separately.
                              'videos')
     parser.add_argument('--shutdown-pin', type=int, default=None,
                         help='GPIO pin to trigger system shutdown (default None)')
+    parser.add_argument('--subtitle-pin', type=int, default=None,
+                        help='GPIO pin to toggle subtitles (default None)')
 
     # Invoke the videoplayer
     args = parser.parse_args()
